@@ -1,2 +1,2 @@
 # advent-of-code
-Solutions to various 'Advent of Code' challenges. At the moment of creation of this repository I've had 143 start for early days of 2015-2022 editions so this solutions will be missing from this repository because I don't have any intentino of redoing them (at least for now). For 2023 (and hopefully later editions) I'd like to have all of them.
+I've created this repository to share my solutions for 'Advent of Code' challenges. As of now, I've earned 143 stars for the challenges from 2015 to 2022. I won't be including those solutions in this repository because I don't plan to redo them, at least not for the time being. However, for the 2023 edition and future editions, I intend to provide solutions for all of the challenges.
