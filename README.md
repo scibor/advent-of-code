@@ -1,2 +1,2 @@
 # advent-of-code
-My solutions to various 'Advent of Code' challenges.
+Solutions to various 'Advent of Code' challenges.
