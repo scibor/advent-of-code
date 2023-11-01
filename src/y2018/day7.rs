@@ -4,10 +4,17 @@ use std::collections::HashSet;
 
 type Vertex = char;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Edge {
     from: Vertex,
     to: Vertex,
+}
+
+fn flip_edge(e: &Edge) -> Edge {
+    Edge {
+        from: e.to,
+        to: e.from,
+    }
 }
 
 lazy_static! {
@@ -31,24 +38,26 @@ fn find_next(edges: &Vec<Edge>) -> Vec<Vertex> {
         tos.insert(*to);
     }
     froms.retain(|x| !tos.contains(x));
-    let mut possible: Vec<Vertex> = froms.into_iter().collect::<Vec<Vertex>>();
-    possible.sort();
-    possible
+    let mut possible_next_tasks = froms.into_iter().collect::<Vec<Vertex>>();
+    possible_next_tasks.sort();
+    possible_next_tasks
 }
 
 pub fn part1(input: &str) -> String {
     let mut edges: Vec<Edge> = input.lines().map(|x| parse_row(x)).collect();
     let mut result = String::new();
-    let mut rest: Vec<Edge> = Vec::new();
+    let mut rest: Vec<Edge>;
+    let mut tail_handled = false;
     while edges.len() > 0 {
         let next = find_next(&edges)[0];
         result.push(next);
         (edges, rest) = edges.into_iter().partition(|x| x.from != next);
-    }
-    let mut rest: Vec<Vertex> = rest.into_iter().map(|x| x.to).collect();
-    rest.sort();
-    for v in rest {
-        result.push(v);
+
+        // this case handles the rest of the vertices when last requirement is met
+        if edges.is_empty() && !rest.is_empty() && !tail_handled {
+            edges = rest.iter().map(|x| flip_edge(x)).collect();
+            tail_handled = true;
+        }
     }
     result
 }
@@ -57,85 +66,98 @@ fn time_for_task(v: Vertex, time_constant: u8) -> u8 {
     (v as u8) + time_constant - 64
 }
 
-fn time_for_the_rest(rest: &Vec<Edge>, time_constant: u8) -> u64 {
-    println!("time_for_the_rest: {:?}", rest);
-    let mut x = 0;
-    let mut y = 0;
-    let tasks: Vec<u8> = rest
-        .iter()
-        .map(|e| time_for_task(e.to, time_constant))
-        .collect();
-    for t in tasks {
-        if x <= y {
-            x += t
-        } else {
-            y += t
-        }
-    }
-    std::cmp::max(x, y) as u64
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct Worker {
     current_task: char,
     time_to_finish: u8,
 }
 
+impl Worker {
+    fn finished(&self) -> bool {
+        self.time_to_finish == 0
+    }
+}
+
+fn tasks_performed_by_other(workers: &Vec<Worker>, index: usize) -> HashSet<char> {
+    workers
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| *i != index)
+        .map(|(_, worker)| worker.current_task)
+        .collect()
+}
+
+fn process_next_second(
+    edges: &mut Vec<Edge>,
+    workers: &mut Vec<Worker>,
+    time_constant: u8,
+) -> Vec<Edge> {
+    let mut rest: Vec<Edge> = Vec::new();
+    for i in 0..workers.len() {
+        if workers[i].finished() {
+            let other_workers_tasks = tasks_performed_by_other(workers, i);
+            let filtered_edges: Vec<Edge> = edges
+                .iter()
+                .filter(|x| x.from != workers[i].current_task)
+                .cloned()
+                .collect();
+            let potential_rest: Vec<Edge> = edges
+                .iter()
+                .filter(|x| x.from == workers[i].current_task)
+                .cloned()
+                .collect();
+            if potential_rest.len() > 0 {
+                rest = potential_rest;
+            };
+            if let Some(next_task) = find_next(&filtered_edges)
+                .iter()
+                .filter(|&&x| !other_workers_tasks.contains(&x))
+                .next()
+            {
+                workers[i].current_task = *next_task;
+                workers[i].time_to_finish = time_for_task(*next_task, time_constant);
+            }
+            *edges = filtered_edges;
+        }
+        workers[i].time_to_finish = if workers[i].time_to_finish > 0 {
+            workers[i].time_to_finish - 1
+        } else {
+            workers[i].current_task = '.';
+            0
+        };
+    }
+    rest
+}
+
 fn organize_work(mut edges: Vec<Edge>, time_constant: u8, number_of_workers: usize) -> u64 {
     let mut time = 0;
-    let mut rest1: Vec<Edge> = Vec::new();
-    let mut rest2: Vec<Edge> = Vec::new();
-    let workers: Vec<Worker> = vec![
+    let mut tail_handled = false;
+    let mut workers: Vec<Worker> = vec![
         Worker {
             current_task: '.',
             time_to_finish: 0
         };
         number_of_workers
     ];
-    let mut worker1_to_finish = 0;
-    let mut worker2_to_finish = 0;
-    let mut worker1_task = ' ';
-    let mut worker2_task = ' ';
+
+    let mut rest: Vec<Edge>;
     while edges.len() > 0 {
-        if worker1_to_finish == 0 {
-            (edges, rest1) = edges.into_iter().partition(|x| x.from != worker1_task);
-            if let Some(next_task) = find_next(&edges)
-                .iter()
-                .filter(|&&x| x != worker2_task)
-                .next()
-            {
-                worker1_task = *next_task;
-                worker1_to_finish = time_for_task(*next_task, time_constant);
-            }
-        }
-        if worker2_to_finish == 0 {
-            (edges, rest2) = edges.into_iter().partition(|x| x.from != worker2_task);
-            if let Some(next_task) = find_next(&edges)
-                .iter()
-                .filter(|&&x| x != worker1_task)
-                .next()
-            {
-                worker2_task = *next_task;
-                worker2_to_finish = time_for_task(*next_task, time_constant);
-            }
-        }
-        worker1_to_finish = if worker1_to_finish > 0 {
-            worker1_to_finish - 1
-        } else {
-            worker1_task = '.';
-            0
-        };
-        worker2_to_finish = if worker2_to_finish > 0 {
-            worker2_to_finish - 1
-        } else {
-            worker2_task = '.';
-            0
-        };
+        rest = process_next_second(&mut edges, &mut workers, time_constant);
         time += 1;
+
+        if edges.is_empty() && !rest.is_empty() && !tail_handled {
+            edges = rest.iter().map(|x| flip_edge(x)).collect();
+            tail_handled = true;
+        }
     }
-    rest1.append(&mut rest2);
-    let rest_time = time_for_the_rest(&rest1, time_constant);
-    time + rest_time - 1
+
+    if tail_handled {
+        time -= 2
+    } else {
+        time -= 1
+    }
+
+    time
 }
 
 pub fn part2(input: &str) -> u64 {
@@ -157,13 +179,13 @@ mod tests {
             Step F must be finished before step E can begin.";
 
     #[test]
-    fn parse_row1() {
+    fn parse_row_example() {
         let input = "Step A must be finished before step B can begin.";
         assert_eq!(Edge { from: 'A', to: 'B' }, parse_row(input));
     }
 
     #[test]
-    fn find_next1() {
+    fn find_next_test1() {
         assert_eq!(
             'A',
             find_next(&vec![
@@ -174,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn find_next2() {
+    fn find_next_test2() {
         assert_eq!(
             'C',
             find_next(&vec![
@@ -190,34 +212,171 @@ mod tests {
     }
 
     #[test]
-    fn test_case1() {
+    fn test_case_test() {
         assert_eq!("CABDFE", part1(TEST_CASE_INPUT));
     }
 
     #[test]
-    fn time_for_task1() {
+    fn time_for_task_ascii_without_addition() {
         assert_eq!(6, time_for_task('F', 0));
     }
 
     #[test]
-    fn time_for_task2() {
+    fn time_for_task_with_addition() {
         assert_eq!(61, time_for_task('A', 60));
     }
 
     #[test]
-    fn time_for_the_rest1() {
+    fn flip_edge_test() {
         assert_eq!(
-            10,
-            time_for_the_rest(
-                &vec![
-                    Edge { from: 'C', to: 'A' },
-                    Edge { from: 'C', to: 'F' },
-                    Edge { from: 'C', to: 'E' },
-                    Edge { from: 'C', to: 'D' },
-                ],
-                0
-            )
-        )
+            Edge { from: 'x', to: 'D' },
+            flip_edge(&Edge { from: 'D', to: 'x' })
+        );
+    }
+
+    #[test]
+    fn tasks_performed_by_other_test() {
+        let workers = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'B',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'C',
+                time_to_finish: 10,
+            },
+        ];
+        let mut result = HashSet::new();
+        result.insert('A');
+        result.insert('C');
+        assert_eq!(result, tasks_performed_by_other(&workers, 1))
+    }
+
+    #[test]
+    fn process_next_second_time_flows() {
+        let mut edges = vec![Edge { from: 'A', to: 'B' }];
+        let mut workers = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'B',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'C',
+                time_to_finish: 10,
+            },
+        ];
+        let result = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: 'B',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: 'C',
+                time_to_finish: 9,
+            },
+        ];
+        let _ = process_next_second(&mut edges, &mut workers, 0);
+        assert_eq!(result, workers);
+    }
+
+    #[test]
+    fn process_next_second_selecting_new_task() {
+        let mut edges = vec![Edge { from: 'A', to: 'B' }];
+        let mut workers = vec![
+            Worker {
+                current_task: 'Z',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'W',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: '.',
+                time_to_finish: 0,
+            },
+        ];
+        let result = vec![
+            Worker {
+                current_task: 'Z',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: 'W',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: 'A',
+                time_to_finish: 5,
+            },
+        ];
+        let _ = process_next_second(&mut edges, &mut workers, 5);
+        assert_eq!(result, workers);
+    }
+
+    #[test]
+    fn process_next_second_cant_select_new_task() {
+        let mut edges = vec![Edge { from: 'A', to: 'B' }];
+        let mut workers = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: 'W',
+                time_to_finish: 10,
+            },
+            Worker {
+                current_task: '.',
+                time_to_finish: 0,
+            },
+        ];
+        let result = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: 'W',
+                time_to_finish: 9,
+            },
+            Worker {
+                current_task: '.',
+                time_to_finish: 0,
+            },
+        ];
+        let _ = process_next_second(&mut edges, &mut workers, 5);
+        assert_eq!(result, workers);
+    }
+
+    #[test]
+    fn process_next_second_result_test() {
+        let mut edges = vec![Edge { from: 'A', to: 'B' }];
+        let mut workers = vec![
+            Worker {
+                current_task: 'A',
+                time_to_finish: 0,
+            },
+            Worker {
+                current_task: '.',
+                time_to_finish: 0,
+            },
+        ];
+        let expected_result = edges.clone();
+        let restult = process_next_second(&mut edges, &mut workers, 5);
+        assert_eq!(expected_result, restult);
     }
 
     #[test]
