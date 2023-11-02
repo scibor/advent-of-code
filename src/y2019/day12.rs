@@ -12,9 +12,9 @@ struct Moon {
 
 impl Moon {
     fn move_one_timestep(&mut self) {
-        self.position.0 = self.position.0 + self.velocity.0;
-        self.position.1 = self.position.1 + self.velocity.1;
-        self.position.2 = self.position.2 + self.velocity.2;
+        self.position.0 += self.velocity.0;
+        self.position.1 += self.velocity.1;
+        self.position.2 += self.velocity.2;
     }
 
     fn kinetic_energy(&self) -> i64 {
@@ -43,11 +43,11 @@ fn parse_row(row: &str) -> Moon {
     }
 }
 
-fn calculate_gravity_for_moon(moons: &Vec<Moon>, i: usize) -> Moon {
+fn calculate_gravity_for_moon(moons: &[Moon], i: usize) -> Moon {
     let current_moon = &moons[i];
     let mut velocity = current_moon.velocity.clone();
     let other: Vec<Moon> = moons
-        .into_iter()
+        .iter()
         .enumerate()
         .filter(|(j, _)| *j != i)
         .map(|(_, x)| x)
@@ -103,7 +103,7 @@ fn energy_after_n_steps(moons: Vec<Moon>, n: usize) -> u64 {
 }
 
 pub fn part1(input: &str) -> u64 {
-    let moons: Vec<Moon> = input.lines().map(|x| parse_row(x)).collect();
+    let moons: Vec<Moon> = input.lines().map(parse_row).collect();
     energy_after_n_steps(moons, 1000)
 }
 pub fn part2(_: &str) -> u64 {

@@ -44,18 +44,18 @@ fn find_next(edges: &Vec<Edge>) -> Vec<Vertex> {
 }
 
 pub fn part1(input: &str) -> String {
-    let mut edges: Vec<Edge> = input.lines().map(|x| parse_row(x)).collect();
+    let mut edges: Vec<Edge> = input.lines().map(parse_row).collect();
     let mut result = String::new();
     let mut rest: Vec<Edge>;
     let mut tail_handled = false;
-    while edges.len() > 0 {
+    while !edges.is_empty() {
         let next = find_next(&edges)[0];
         result.push(next);
         (edges, rest) = edges.into_iter().partition(|x| x.from != next);
 
         // this case handles the rest of the vertices when last requirement is met
         if edges.is_empty() && !rest.is_empty() && !tail_handled {
-            edges = rest.iter().map(|x| flip_edge(x)).collect();
+            edges = rest.iter().map(flip_edge).collect();
             tail_handled = true;
         }
     }
@@ -78,7 +78,7 @@ impl Worker {
     }
 }
 
-fn tasks_performed_by_other(workers: &Vec<Worker>, index: usize) -> HashSet<char> {
+fn tasks_performed_by_other(workers: &[Worker], index: usize) -> HashSet<char> {
     workers
         .iter()
         .enumerate()
@@ -106,13 +106,12 @@ fn process_next_second(
                 .filter(|x| x.from == workers[i].current_task)
                 .cloned()
                 .collect();
-            if potential_rest.len() > 0 {
+            if !potential_rest.is_empty() {
                 rest = potential_rest;
             };
             if let Some(next_task) = find_next(&filtered_edges)
                 .iter()
-                .filter(|&&x| !other_workers_tasks.contains(&x))
-                .next()
+                .find(|&&x| !other_workers_tasks.contains(&x))
             {
                 workers[i].current_task = *next_task;
                 workers[i].time_to_finish = time_for_task(*next_task, time_constant);
@@ -141,12 +140,12 @@ fn organize_work(mut edges: Vec<Edge>, time_constant: u8, number_of_workers: usi
     ];
 
     let mut rest: Vec<Edge>;
-    while edges.len() > 0 {
+    while !edges.is_empty() {
         rest = process_next_second(&mut edges, &mut workers, time_constant);
         time += 1;
 
         if edges.is_empty() && !rest.is_empty() && !tail_handled {
-            edges = rest.iter().map(|x| flip_edge(x)).collect();
+            edges = rest.iter().map(flip_edge).collect();
             tail_handled = true;
         }
     }
@@ -161,7 +160,7 @@ fn organize_work(mut edges: Vec<Edge>, time_constant: u8, number_of_workers: usi
 }
 
 pub fn part2(input: &str) -> u64 {
-    let edges: Vec<Edge> = input.lines().map(|x| parse_row(x)).collect();
+    let edges: Vec<Edge> = input.lines().map(parse_row).collect();
     organize_work(edges, 60, 5)
 }
 
