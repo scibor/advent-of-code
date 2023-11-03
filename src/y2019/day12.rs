@@ -106,8 +106,83 @@ pub fn part1(input: &str) -> u64 {
     let moons: Vec<Moon> = input.lines().map(parse_row).collect();
     energy_after_n_steps(moons, 1000)
 }
-pub fn part2(_: &str) -> u64 {
-    0
+
+fn lcm(x: u64, y: u64) -> u64 {
+    x * y / gcd(x, y)
+}
+
+fn gcd(mut x: u64, mut y: u64) -> u64 {
+    let mut bigger = x;
+    let mut smaller = y;
+    if smaller > bigger {
+        std::mem::swap(&mut x, &mut y);
+    }
+
+    loop {
+        let res = bigger % smaller;
+        if res == 0 {
+            return smaller;
+        }
+
+        bigger = smaller;
+        smaller = res;
+    }
+}
+
+fn find_cycle(moons: &[Moon]) -> u64 {
+    let mut x_cycle = 0;
+    let mut y_cycle = 0;
+    let mut z_cycle = 0;
+
+    let xs: Vec<i64> = moons.iter().map(|x| x.position.0).collect();
+    let ys: Vec<i64> = moons.iter().map(|x| x.position.1).collect();
+    let zs: Vec<i64> = moons.iter().map(|x| x.position.2).collect();
+
+    let mut counter = 0;
+
+    let mut current_moons: Vec<Moon> = moons.to_vec();
+    while x_cycle * y_cycle * z_cycle == 0 {
+        counter += 1;
+        current_moons = calculate_gravity(&current_moons);
+        for moon in &mut current_moons {
+            moon.move_one_timestep();
+        }
+        if x_cycle == 0
+            && current_moons
+                .iter()
+                .map(|x| x.position.0)
+                .collect::<Vec<i64>>()
+                == xs
+        {
+            x_cycle = counter + 1;
+        }
+
+        if y_cycle == 0
+            && current_moons
+                .iter()
+                .map(|x| x.position.1)
+                .collect::<Vec<i64>>()
+                == ys
+        {
+            y_cycle = counter + 1;
+        }
+
+        if z_cycle == 0
+            && current_moons
+                .iter()
+                .map(|x| x.position.2)
+                .collect::<Vec<i64>>()
+                == zs
+        {
+            z_cycle = counter + 1;
+        }
+    }
+    lcm(lcm(x_cycle, y_cycle), z_cycle)
+}
+
+pub fn part2(input: &str) -> u64 {
+    let moons: Vec<Moon> = input.lines().map(parse_row).collect();
+    find_cycle(&moons)
 }
 
 #[cfg(test)]
@@ -220,5 +295,33 @@ mod tests {
     fn test_case_2() {
         let moons: Vec<Moon> = TEST_CASE_INPUT2.lines().map(|x| parse_row(x)).collect();
         assert_eq!(1940, energy_after_n_steps(moons, 100))
+    }
+
+    #[test]
+    fn find_cycle_test1() {
+        let moons: Vec<Moon> = TEST_CASE_INPUT1.lines().map(|x| parse_row(x)).collect();
+        assert_eq!(2772, find_cycle(&moons))
+    }
+
+    #[test]
+    fn find_cycle_test2() {
+        let moons: Vec<Moon> = TEST_CASE_INPUT2.lines().map(|x| parse_row(x)).collect();
+        assert_eq!(4686774924, find_cycle(&moons))
+    }
+
+    #[test]
+    fn test_gcd() {
+        assert_eq!(
+            2 * 3 * 7 * 5 * 5,
+            gcd(
+                2 * 5 * 7 * 5 * 3 * 11 * 17,
+                2 * 3 * 7 * 5 * 5 * 8 * 7 * 3 * 5 * 7
+            )
+        )
+    }
+
+    #[test]
+    fn test_lcm() {
+        assert_eq!(2 * 3 * 7 * 5 * 5, lcm(2 * 3 * 5, 7 * 5 * 5 * 3))
     }
 }
