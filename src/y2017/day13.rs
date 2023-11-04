@@ -49,15 +49,15 @@ impl Layer {
 }
 
 fn parse_row(row: &str) -> Layer {
-    let split: Vec<&str> = row.split(":").collect();
+    let split: Vec<&str> = row.split(':').collect();
     Layer::new(
-        split.get(0).unwrap().trim().parse::<usize>().unwrap(),
+        split.first().unwrap().trim().parse::<usize>().unwrap(),
         split.get(1).unwrap().trim().parse::<usize>().unwrap(),
     )
 }
 
 fn parse_layers(input: &str) -> Vec<Layer> {
-    input.lines().map(|row| parse_row(row)).collect()
+    input.lines().map(parse_row).collect()
 }
 
 fn add_empty_layers(layers: Vec<Layer>) -> Vec<Layer> {
@@ -81,7 +81,7 @@ fn move_scanners(layers: &mut [Layer]) {
     }
 }
 
-fn trip_severity(mut layers: Vec<Layer>) -> u64 {
+fn trip_severity(mut layers: Vec<Layer>) -> usize {
     let mut result = 0;
     let length = layers.len();
 
@@ -91,27 +91,27 @@ fn trip_severity(mut layers: Vec<Layer>) -> u64 {
         }
         move_scanners(&mut layers);
     }
-    result as u64
+    result
 }
 
-pub fn part1(input: &str) -> u64 {
+pub fn part1(input: &str) -> usize {
     let layers: Vec<Layer> = add_empty_layers(parse_layers(input));
     trip_severity(layers)
 }
 
 #[derive(Debug, PartialEq)]
 struct Congruence {
-    modulo: u64,
-    not_equal: u64,
+    modulo: usize,
+    not_equal: usize,
 }
 
 impl Congruence {
-    fn new(modulo: u64, not_equal: u64) -> Self {
+    fn new(modulo: usize, not_equal: usize) -> Self {
         Congruence { modulo, not_equal }
     }
 
-    fn to_predicate(&self, x: u64) -> bool {
-        x % self.modulo != self.not_equal.into()
+    fn to_predicate(&self, x: usize) -> bool {
+        x % self.modulo != self.not_equal
     }
 }
 
@@ -120,11 +120,11 @@ fn get_congruences(layers: Vec<Layer>) -> Vec<Congruence> {
         .into_iter()
         .filter(|l| l.range != 0)
         .map(|l| {
-            let modulo = ((l.range - 1) * 2) as u64;
-            let not_equal = if modulo > (l.depth as u64) {
-                (modulo - (l.depth as u64)) % modulo
+            let modulo = (l.range - 1) * 2;
+            let not_equal = if modulo > l.depth {
+                (modulo - l.depth) % modulo
             } else {
-                let diff = (l.depth as u64) % modulo;
+                let diff = l.depth % modulo;
                 (modulo - diff) % modulo
             };
             Congruence::new(modulo, not_equal)
@@ -132,19 +132,19 @@ fn get_congruences(layers: Vec<Layer>) -> Vec<Congruence> {
         .collect()
 }
 
-fn find_number(congruences: Vec<Congruence>) -> u64 {
+fn find_number(congruences: Vec<Congruence>) -> usize {
     let result = (0..)
-        .find(|x| congruences.iter().all(|c| c.to_predicate(*x as u64)))
+        .find(|x| congruences.iter().all(|c| c.to_predicate(*x)))
         .unwrap();
     result
 }
 
-fn delay_start(layers: Vec<Layer>) -> u64 {
+fn delay_start(layers: Vec<Layer>) -> usize {
     let congruences: Vec<Congruence> = get_congruences(layers);
     find_number(congruences)
 }
 
-fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> u64 {
+fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> usize {
     let mut result = 0;
     let length = layers.len();
 
@@ -154,10 +154,10 @@ fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> u64 {
         }
         move_scanners(&mut layers);
     }
-    result as u64
+    result
 }
 
-pub fn part2(input: &str) -> u64 {
+pub fn part2(input: &str) -> usize {
     let layers: Vec<Layer> = add_empty_layers(parse_layers(input));
     delay_start(layers.clone())
 }
