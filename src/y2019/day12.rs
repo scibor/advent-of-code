@@ -54,7 +54,7 @@ fn calculate_gravity_for_moon(moons: &[Moon], i: usize) -> Moon {
         .cloned()
         .collect();
 
-    for moon in other.iter() {
+    for moon in &other {
         // x
         match current_moon.position.0.cmp(&moon.position.0) {
             std::cmp::Ordering::Less => velocity.0 += 1,
@@ -98,7 +98,7 @@ fn energy_after_n_steps(moons: Vec<Moon>, n: usize) -> u64 {
         }
     }
     current_moons.iter().fold(0, |acc, moon| {
-        acc + (moon.kinetic_energy() as u64) * (moon.potential_energy() as u64)
+        acc + moon.kinetic_energy().unsigned_abs() * moon.potential_energy().unsigned_abs()
     })
 }
 

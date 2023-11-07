@@ -60,7 +60,7 @@ fn parse_layers(input: &str) -> Vec<Layer> {
     input.lines().map(parse_row).collect()
 }
 
-fn add_empty_layers(layers: Vec<Layer>) -> Vec<Layer> {
+fn add_empty_layers(layers: &[Layer]) -> Vec<Layer> {
     let max = &layers.iter().map(|x| x.depth).max().unwrap();
     let mut result: Vec<Layer> = Vec::new();
     let mut index = 0;
@@ -76,7 +76,7 @@ fn add_empty_layers(layers: Vec<Layer>) -> Vec<Layer> {
 }
 
 fn move_scanners(layers: &mut [Layer]) {
-    for layer in layers.iter_mut() {
+    for layer in &mut *layers {
         layer.move_scanner();
     }
 }
@@ -95,7 +95,7 @@ fn trip_severity(mut layers: Vec<Layer>) -> usize {
 }
 
 pub fn part1(input: &str) -> usize {
-    let layers: Vec<Layer> = add_empty_layers(parse_layers(input));
+    let layers: Vec<Layer> = add_empty_layers(&parse_layers(input));
     trip_severity(layers)
 }
 
@@ -132,8 +132,8 @@ fn get_congruences(layers: Vec<Layer>) -> Vec<Congruence> {
         .collect()
 }
 
-fn find_number(congruences: Vec<Congruence>) -> usize {
-    let result = (0..)
+fn find_number(congruences: &[Congruence]) -> usize {
+    let result = (0..usize::MAX)
         .find(|x| congruences.iter().all(|c| c.to_predicate(*x)))
         .unwrap();
     result
@@ -141,7 +141,7 @@ fn find_number(congruences: Vec<Congruence>) -> usize {
 
 fn delay_start(layers: Vec<Layer>) -> usize {
     let congruences: Vec<Congruence> = get_congruences(layers);
-    find_number(congruences)
+    find_number(&congruences)
 }
 
 fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> usize {
@@ -158,7 +158,7 @@ fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let layers: Vec<Layer> = add_empty_layers(parse_layers(input));
+    let layers: Vec<Layer> = add_empty_layers(&parse_layers(input));
     delay_start(layers.clone())
 }
 
@@ -200,7 +200,7 @@ mod tests {
             Layer::new(5, 0),
             Layer::new(6, 4),
         ];
-        assert_eq!(expected, add_empty_layers(parse_layers(TEST_CASE_INPUT)));
+        assert_eq!(expected, add_empty_layers(&parse_layers(TEST_CASE_INPUT)));
     }
 
     #[test]
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn test_case_part1() {
-        let layers = add_empty_layers(parse_layers(TEST_CASE_INPUT));
+        let layers = add_empty_layers(&parse_layers(TEST_CASE_INPUT));
         assert_eq!(24, trip_severity(layers));
     }
 
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn test_get_congruences() {
-        let layers = add_empty_layers(parse_layers(TEST_CASE_INPUT));
+        let layers = add_empty_layers(&parse_layers(TEST_CASE_INPUT));
         let expected = vec![
             Congruence::new(4, 0),
             Congruence::new(2, 1),
@@ -262,12 +262,12 @@ mod tests {
             Congruence::new(6, 2),
             Congruence::new(6, 0),
         ];
-        assert_eq!(10, find_number(congruences));
+        assert_eq!(10, find_number(&congruences));
     }
 
     #[test]
     fn test_case_part2() {
-        let layers = add_empty_layers(parse_layers(TEST_CASE_INPUT));
+        let layers = add_empty_layers(&parse_layers(TEST_CASE_INPUT));
         assert_eq!(10, delay_start(layers));
     }
 }

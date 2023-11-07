@@ -111,7 +111,7 @@ fn find_particles_with_minimal_acc(particles: Vec<Particle>) -> Vec<Particle> {
     let minimal_acceleration_rate = particles
         .iter()
         .min_by(|p1, p2| p1.acceleration_rate().cmp(&p2.acceleration_rate()))
-        .map(|p| p.acceleration_rate())
+        .map(Particle::acceleration_rate)
         .unwrap();
     particles
         .into_iter()
@@ -119,7 +119,7 @@ fn find_particles_with_minimal_acc(particles: Vec<Particle>) -> Vec<Particle> {
         .collect()
 }
 
-fn find_particle_with_minimal_rate(particles: Vec<Particle>) -> usize {
+fn find_particle_with_minimal_rate(particles: &[Particle]) -> usize {
     particles
         .iter()
         .min_by(|p1, p2| p1.rate_of_position_change.cmp(&p2.rate_of_position_change))
@@ -143,7 +143,7 @@ pub fn part1(input: &str) -> usize {
         are_getting_closer = directions.iter().any(|d| *d == Direction::GettingCloser);
     }
 
-    find_particle_with_minimal_rate(minimal_acceleration_particles)
+    find_particle_with_minimal_rate(&minimal_acceleration_particles)
 }
 
 pub fn part2(_: &str) -> usize {

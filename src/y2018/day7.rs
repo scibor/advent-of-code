@@ -39,7 +39,7 @@ fn find_next(edges: &Vec<Edge>) -> Vec<Vertex> {
     }
     froms.retain(|x| !tos.contains(x));
     let mut possible_next_tasks = froms.into_iter().collect::<Vec<Vertex>>();
-    possible_next_tasks.sort();
+    possible_next_tasks.sort_unstable();
     possible_next_tasks
 }
 
@@ -151,9 +151,9 @@ fn organize_work(mut edges: Vec<Edge>, time_constant: u8, number_of_workers: usi
     }
 
     if tail_handled {
-        time -= 2
+        time -= 2;
     } else {
-        time -= 1
+        time -= 1;
     }
 
     time

@@ -11,7 +11,7 @@ impl Player {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum RoundResult {
     StillPlaying,
     Player1Won,
