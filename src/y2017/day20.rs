@@ -30,7 +30,7 @@ enum Direction {
     FlyingAway,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Particle {
     position: Vector3,
     velocity: Vector3,
@@ -146,8 +146,42 @@ pub fn part1(input: &str) -> usize {
     find_particle_with_minimal_rate(&minimal_acceleration_particles)
 }
 
-pub fn part2(_: &str) -> usize {
-    0
+pub fn part2(input: &str) -> usize {
+    let mut particles: Vec<Particle> = parse_data(input);
+
+    loop {
+        let mut directions: Vec<Direction> = Vec::with_capacity(particles.len());
+        for particle in &mut particles {
+            particle.move_particle();
+            directions.push(particle.moving_direction);
+        }
+
+        let to_remove: Vec<Vector3> = particles
+            .iter()
+            .filter(|p| {
+                let dups: Vec<Particle> = particles
+                    .iter()
+                    .filter(|p2| p2 != p && p2.position == p.position)
+                    .map(std::clone::Clone::clone)
+                    .collect();
+                !dups.is_empty()
+            })
+            .map(|p| p.position)
+            .collect();
+
+        particles.retain(|p| !to_remove.contains(&p.position));
+
+        // TODO: this condition is not optimal and could be wrong but I have no idea how to easily check whether all
+        // particles are getting away from each other and this version yields the correct answer for a
+        // problem with my data set. velocity and acceleration vectors should point
+        // outward from each other and then particles could not collide. It can probably be expressed
+        // somehow using dot product.
+        if directions.iter().all(|d| *d == Direction::FlyingAway) {
+            break;
+        }
+    }
+
+    particles.len()
 }
 
 #[cfg(test)]
