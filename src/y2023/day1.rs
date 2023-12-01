@@ -1,15 +1,17 @@
 fn get_calibration_value(s: &str) -> usize {
-    let mut first = ' ';
-    let mut last = ' ';
+    let mut first = None;
+    let mut last = None;
     for c in s.chars() {
         if c.is_ascii_digit() {
-            last = c;
-            if first == ' ' {
-                first = c;
+            last = Some(c);
+            if first.is_none() {
+                first = Some(c);
             }
         }
     }
-    format!("{first}{last}").parse().unwrap()
+    format!("{}{}", first.unwrap(), last.unwrap())
+        .parse()
+        .unwrap()
 }
 
 pub fn part1(input: &str) -> String {
@@ -18,23 +20,24 @@ pub fn part1(input: &str) -> String {
 }
 
 fn get_calibration_value2(s: &str, digit_map: &[(&str, char)]) -> usize {
-    let mut first = ' ';
-    let mut last = ' ';
+    let mut first = None;
+    let mut last = None;
     for (i, c) in s.chars().enumerate() {
         if let Some(x) = starts_with_digit(&s[i..], digit_map) {
-            last = x.1;
-            if first == ' ' {
-                first = x.1;
+            last = Some(x.1);
+            if first.is_none() {
+                first = Some(x.1);
             }
-        }
-        if c.is_ascii_digit() {
-            last = c;
-            if first == ' ' {
-                first = c;
+        } else if c.is_ascii_digit() {
+            last = Some(c);
+            if first.is_none() {
+                first = Some(c);
             }
         }
     }
-    format!("{first}{last}").parse().unwrap()
+    format!("{}{}", first.unwrap(), last.unwrap())
+        .parse()
+        .unwrap()
 }
 
 fn starts_with_digit<'a>(
