@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Position(isize, isize);
@@ -31,6 +31,7 @@ impl Board {
         false
     }
 
+    #[allow(clippy::cast_possible_wrap)]
     fn get_number_positions(number: &Number) -> Vec<Position> {
         let mut number_positions = Vec::new();
         let Position(y, x) = number.pos;
@@ -52,6 +53,31 @@ impl Board {
         neighbors.push(Position(y - 1, *x));
         neighbors.push(Position(y - 1, x - 1));
         neighbors
+    }
+
+    fn is_gear(&self, position: &Position, symbol: char) -> bool {
+        if symbol != '*' {
+            return false;
+        }
+        self.numbers
+            .iter()
+            .filter(|n| Self::is_number_a_neighbor(position, n))
+            .count()
+            == 2
+    }
+
+    fn is_number_a_neighbor(position: &Position, number: &Number) -> bool {
+        let neighbors: HashSet<Position> = Self::get_neighbors(position).into_iter().collect();
+        let number_positions: HashSet<Position> =
+            Self::get_number_positions(number).into_iter().collect();
+        neighbors.intersection(&number_positions).next().is_some()
+    }
+
+    fn get_gear_value(&self, position: &Position) -> usize {
+        self.numbers
+            .iter()
+            .filter(|n| Self::is_number_a_neighbor(position, n))
+            .fold(1, |acc, x| acc * x.value.parse::<usize>().unwrap())
     }
 }
 
@@ -119,21 +145,27 @@ fn parse_board(input: &str) -> Board {
 
 pub fn part1(input: &str) -> String {
     let b = parse_board(input);
-    let mut set = BTreeSet::new();
+    let mut numbers_to_sum = Vec::new();
     for number in &b.numbers {
         if b.adjacent_to_symbol(number) {
-            if !set.contains(&number.value) {
-                dbg!(&number.value);
-            }
-            set.insert(&number.value);
+            numbers_to_sum.push(&number.value);
         }
     }
-    let result: usize = set.into_iter().map(|x| x.parse::<usize>().unwrap()).sum();
+    let result: usize = numbers_to_sum
+        .into_iter()
+        .map(|x| x.parse::<usize>().unwrap())
+        .sum();
     format!("{result}")
 }
 
-pub fn part2(_input: &str) -> String {
-    let result = 0;
+pub fn part2(input: &str) -> String {
+    let b = parse_board(input);
+    let mut result = 0;
+    for (p, s) in &b.symbols {
+        if b.is_gear(p, *s) {
+            result += b.get_gear_value(p);
+        }
+    }
     format!("{result}")
 }
 
@@ -168,7 +200,6 @@ mod tests {
 
     #[test]
     fn get_number_positions_test() {
-        let b = parse_board(TEST_DATA);
         let number = Number {
             pos: Position(9, 5),
             value: "598".to_owned(),
@@ -219,8 +250,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "not yet"]
     fn test_case_part2() {
-        assert_eq!("1", part1(TEST_DATA));
+        assert_eq!("467835", part2(TEST_DATA));
     }
 }
