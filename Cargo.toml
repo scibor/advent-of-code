@@ -7,6 +7,7 @@ edition = "2021"
 
 [profile.release]
 lto = true
+panic = 'abort'
 
 [dependencies]
 lazy_static = "1.4.0"
