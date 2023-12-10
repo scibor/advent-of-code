@@ -146,7 +146,7 @@ pub fn part1(input: &str) -> String {
 // counted area that were inside. It requires manually doing something in MS Paint so I don't want
 // to post this code in here. The trick to do it this this way is to not draw bmp file pixel by pixel but
 // with 3x3 grids to allow spaces between pipes. I would gladly solve it the normal way after
-// learning how to do this.
+// learning how to do this. Visualization for my input is in visualizations folder in repository.
 pub fn part2(_input: &str) -> String {
     let result = 0;
     format!("{result}")
