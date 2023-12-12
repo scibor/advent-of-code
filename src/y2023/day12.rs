@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 #[derive(Debug, PartialEq)]
 struct Row {
     row: String,
     damaged: Vec<usize>,
+    map: HashMap<(usize, usize), usize>,
 }
 
 impl Row {
@@ -17,6 +20,7 @@ impl Row {
         Row {
             row: String::from(row),
             damaged,
+            map: HashMap::new(),
         }
     }
 
@@ -38,23 +42,28 @@ impl Row {
         Row {
             row: format!("{row}?{row}?{row}?{row}?{row}"),
             damaged,
+            map: HashMap::new(),
         }
     }
 
-    fn count_possibilities(&self) -> usize {
+    fn count_possibilities(&mut self) -> usize {
         let length = self.row.len();
         let damaged_number = self.damaged.iter().sum();
         self.backtrack(String::new(), 0, length, damaged_number, 0)
     }
 
     fn backtrack(
-        &self,
+        &mut self,
         current_string: String,
         length: usize,
         real_length: usize,
         damaged_number: usize,
         number_of_hashes: usize,
     ) -> usize {
+        if self.map.contains_key(&(length, number_of_hashes)) {
+            return *self.map.get(&(length, number_of_hashes)).unwrap();
+        }
+
         if length == real_length {
             if self.is_correct(&current_string) {
                 return 1;
@@ -75,24 +84,28 @@ impl Row {
             '#' => {
                 let mut new_string = current_string.clone();
                 new_string.push('#');
-                self.backtrack(
+                let result = self.backtrack(
                     new_string,
                     length + 1,
                     real_length,
                     damaged_number,
                     number_of_hashes + 1,
-                )
+                );
+                self.map.insert((length, number_of_hashes), result);
+                return result;
             }
             '.' => {
                 let mut new_string = current_string.clone();
                 new_string.push('.');
-                self.backtrack(
+                let result = self.backtrack(
                     new_string,
                     length + 1,
                     real_length,
                     damaged_number,
                     number_of_hashes,
-                )
+                );
+                self.map.insert((length, number_of_hashes), result);
+                return result;
             }
 
             '?' => {
@@ -103,7 +116,7 @@ impl Row {
                 let possible1 = self.is_possible_solution(&new_string1);
                 let possible2 = self.is_possible_solution(&new_string2);
                 if possible1 && possible2 {
-                    self.backtrack(
+                    let result = self.backtrack(
                         new_string1,
                         length + 1,
                         real_length,
@@ -115,23 +128,30 @@ impl Row {
                         real_length,
                         damaged_number,
                         number_of_hashes,
-                    )
+                    );
+                    self.map.insert((length, number_of_hashes), result);
+                    return result;
                 } else if possible1 {
-                    self.backtrack(
+                    let result = self.backtrack(
                         new_string1,
                         length + 1,
                         real_length,
                         damaged_number,
                         number_of_hashes + 1,
-                    )
+                    );
+
+                    self.map.insert((length, number_of_hashes), result);
+                    return result;
                 } else if possible2 {
-                    self.backtrack(
+                    let result = self.backtrack(
                         new_string2,
                         length + 1,
                         real_length,
                         damaged_number,
                         number_of_hashes,
-                    )
+                    );
+                    self.map.insert((length, number_of_hashes), result);
+                    return result;
                 } else {
                     0
                 }
@@ -209,7 +229,7 @@ impl Row {
 pub fn part1(input: &str) -> String {
     let rows: Vec<Row> = input.lines().map(|line| Row::parse(line.trim())).collect();
     let mut result = 0;
-    for row in rows {
+    for mut row in rows {
         let possibilities = row.count_possibilities();
         result += possibilities;
     }
@@ -223,7 +243,7 @@ pub fn part2(input: &str) -> String {
         .collect();
     let mut result = 0;
     let mut counter = 1;
-    for row in rows {
+    for mut row in rows {
         println!("{counter}");
         let possibilities = row.count_possibilities();
         result += possibilities;
@@ -249,7 +269,14 @@ mod tests {
         let input = "????.######..#####. 1,6,5";
         let row = String::from("????.######..#####.");
         let damaged = Vec::from([1, 6, 5]);
-        assert_eq!(Row { row, damaged }, Row::parse(input));
+        assert_eq!(
+            Row {
+                row,
+                damaged,
+                map: HashMap::new()
+            },
+            Row::parse(input)
+        );
     }
 
     #[test]
