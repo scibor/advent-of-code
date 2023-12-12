@@ -43,27 +43,39 @@ impl Row {
 
     fn count_possibilities(&self) -> usize {
         let length = self.row.len();
-        self.backtrack(String::new(), 0, length)
+        let damaged_number = self.damaged.iter().sum();
+        self.backtrack(String::new(), 0, length, damaged_number)
     }
 
-    fn backtrack(&self, current_string: String, length: usize, real_length: usize) -> usize {
+    fn backtrack(
+        &self,
+        current_string: String,
+        length: usize,
+        real_length: usize,
+        damaged_number: usize,
+    ) -> usize {
         if length == real_length {
             if self.is_correct(&current_string) {
                 return 1;
             }
             return 0;
         }
+
+        if current_string.chars().filter(|&c| c == '#').count() > damaged_number {
+            return 0;
+        }
+
         let current_char = self.row.chars().nth(length).unwrap();
         match current_char {
             '#' => {
                 let mut new_string = current_string.clone();
                 new_string.push('#');
-                self.backtrack(new_string, length + 1, real_length)
+                self.backtrack(new_string, length + 1, real_length, damaged_number)
             }
             '.' => {
                 let mut new_string = current_string.clone();
                 new_string.push('.');
-                self.backtrack(new_string, length + 1, real_length)
+                self.backtrack(new_string, length + 1, real_length, damaged_number)
             }
 
             '?' => {
@@ -74,12 +86,12 @@ impl Row {
                 let possible1 = self.is_possible_solution(&new_string1);
                 let possible2 = self.is_possible_solution(&new_string2);
                 if possible1 && possible2 {
-                    self.backtrack(new_string1, length + 1, real_length)
-                        + self.backtrack(new_string2, length + 1, real_length)
+                    self.backtrack(new_string1, length + 1, real_length, damaged_number)
+                        + self.backtrack(new_string2, length + 1, real_length, damaged_number)
                 } else if possible1 {
-                    self.backtrack(new_string1, length + 1, real_length)
+                    self.backtrack(new_string1, length + 1, real_length, damaged_number)
                 } else if possible2 {
-                    self.backtrack(new_string2, length + 1, real_length)
+                    self.backtrack(new_string2, length + 1, real_length, damaged_number)
                 } else {
                     0
                 }
@@ -89,22 +101,40 @@ impl Row {
     }
 
     fn is_correct(&self, current_string: &str) -> bool {
+        //println!("{current_string} {:?}", self);
         let mut damaged_number = 0;
-        let mut numbers = Vec::new();
-        for c in current_string.chars() {
-            if c == '#' {
-                damaged_number += 1;
-            } else if c == '.' && damaged_number > 0 {
-                numbers.push(damaged_number);
+        let mut string_iter = current_string.chars();
+        let mut damaged_iter = self.damaged.iter().peekable();
+        while let Some(c) = string_iter.next() {
+            if c == '.' {
+                if damaged_number > 0 && damaged_iter.peek().is_none() {
+                    //println!("FALSE1");
+                    return false;
+                }
+                if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
+                    //println!("FALSE2");
+                    return false;
+                }
                 damaged_number = 0;
+                continue;
             }
+            damaged_number += 1;
         }
 
-        if damaged_number > 0 {
-            numbers.push(damaged_number);
+        if damaged_number > 0 && damaged_iter.peek().is_none() {
+            //println!("FALSE3");
+            return false;
+        }
+        if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
+            //println!("FALSE4");
+            return false;
         }
 
-        numbers == self.damaged
+        if damaged_iter.peek().is_some() {
+            return false;
+        }
+
+        true
     }
 
     fn is_possible_solution(&self, current_string: &str) -> bool {
