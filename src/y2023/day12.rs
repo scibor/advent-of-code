@@ -44,7 +44,7 @@ impl Row {
     fn count_possibilities(&self) -> usize {
         let length = self.row.len();
         let damaged_number = self.damaged.iter().sum();
-        self.backtrack(String::new(), 0, length, damaged_number)
+        self.backtrack(String::new(), 0, length, damaged_number, 0)
     }
 
     fn backtrack(
@@ -53,6 +53,7 @@ impl Row {
         length: usize,
         real_length: usize,
         damaged_number: usize,
+        number_of_hashes: usize,
     ) -> usize {
         if length == real_length {
             if self.is_correct(&current_string) {
@@ -61,7 +62,11 @@ impl Row {
             return 0;
         }
 
-        if current_string.chars().filter(|&c| c == '#').count() > damaged_number {
+        if number_of_hashes > damaged_number {
+            return 0;
+        }
+
+        if damaged_number - number_of_hashes > real_length - length {
             return 0;
         }
 
@@ -70,12 +75,24 @@ impl Row {
             '#' => {
                 let mut new_string = current_string.clone();
                 new_string.push('#');
-                self.backtrack(new_string, length + 1, real_length, damaged_number)
+                self.backtrack(
+                    new_string,
+                    length + 1,
+                    real_length,
+                    damaged_number,
+                    number_of_hashes + 1,
+                )
             }
             '.' => {
                 let mut new_string = current_string.clone();
                 new_string.push('.');
-                self.backtrack(new_string, length + 1, real_length, damaged_number)
+                self.backtrack(
+                    new_string,
+                    length + 1,
+                    real_length,
+                    damaged_number,
+                    number_of_hashes,
+                )
             }
 
             '?' => {
@@ -86,12 +103,35 @@ impl Row {
                 let possible1 = self.is_possible_solution(&new_string1);
                 let possible2 = self.is_possible_solution(&new_string2);
                 if possible1 && possible2 {
-                    self.backtrack(new_string1, length + 1, real_length, damaged_number)
-                        + self.backtrack(new_string2, length + 1, real_length, damaged_number)
+                    self.backtrack(
+                        new_string1,
+                        length + 1,
+                        real_length,
+                        damaged_number,
+                        number_of_hashes + 1,
+                    ) + self.backtrack(
+                        new_string2,
+                        length + 1,
+                        real_length,
+                        damaged_number,
+                        number_of_hashes,
+                    )
                 } else if possible1 {
-                    self.backtrack(new_string1, length + 1, real_length, damaged_number)
+                    self.backtrack(
+                        new_string1,
+                        length + 1,
+                        real_length,
+                        damaged_number,
+                        number_of_hashes + 1,
+                    )
                 } else if possible2 {
-                    self.backtrack(new_string2, length + 1, real_length, damaged_number)
+                    self.backtrack(
+                        new_string2,
+                        length + 1,
+                        real_length,
+                        damaged_number,
+                        number_of_hashes,
+                    )
                 } else {
                     0
                 }
