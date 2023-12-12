@@ -23,12 +23,18 @@ impl Row {
     fn parse_part2(input: &str) -> Row {
         let mut split = input.split(' ');
         let row = split.next().unwrap();
-        let damaged: Vec<usize> = split
+        let numbers: Vec<usize> = split
             .next()
             .unwrap()
             .split(',')
             .map(|x| x.parse::<usize>().unwrap())
             .collect();
+
+        let mut damaged = Vec::new();
+        for _i in 0..5 {
+            damaged.extend(numbers.clone());
+        }
+
         Row {
             row: format!("{row}?{row}?{row}?{row}?{row}"),
             damaged,
@@ -65,8 +71,18 @@ impl Row {
                 let mut new_string2 = current_string.clone();
                 new_string1.push('#');
                 new_string2.push('.');
-                self.backtrack(new_string1, length + 1, real_length)
-                    + self.backtrack(new_string2, length + 1, real_length)
+                let possible1 = self.is_possible_solution(&new_string1);
+                let possible2 = self.is_possible_solution(&new_string2);
+                if possible1 && possible2 {
+                    self.backtrack(new_string1, length + 1, real_length)
+                        + self.backtrack(new_string2, length + 1, real_length)
+                } else if possible1 {
+                    self.backtrack(new_string1, length + 1, real_length)
+                } else if possible2 {
+                    self.backtrack(new_string2, length + 1, real_length)
+                } else {
+                    0
+                }
             }
             _ => unreachable!(),
         }
@@ -90,6 +106,34 @@ impl Row {
 
         numbers == self.damaged
     }
+
+    fn is_possible_solution(&self, current_string: &str) -> bool {
+        let mut damaged_number = 0;
+        let mut string_iter = current_string.chars();
+        let mut damaged_iter = self.damaged.iter().peekable();
+        while let Some(c) = string_iter.next() {
+            if c == '.' {
+                if damaged_number > 0 && damaged_iter.peek().is_none() {
+                    return false;
+                }
+                if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
+                    return false;
+                }
+                damaged_number = 0;
+                continue;
+            }
+            damaged_number += 1;
+        }
+
+        if damaged_number > 0 && damaged_iter.peek().is_none() {
+            return false;
+        }
+        if damaged_number > 0 && *damaged_iter.next().unwrap() < damaged_number {
+            return false;
+        }
+
+        true
+    }
 }
 
 pub fn part1(input: &str) -> String {
@@ -102,8 +146,19 @@ pub fn part1(input: &str) -> String {
     format!("{result}")
 }
 
-pub fn part2(_input: &str) -> String {
-    let result = 0;
+pub fn part2(input: &str) -> String {
+    let rows: Vec<Row> = input
+        .lines()
+        .map(|line| Row::parse_part2(line.trim()))
+        .collect();
+    let mut result = 0;
+    let mut counter = 1;
+    for row in rows {
+        println!("{counter}");
+        let possibilities = row.count_possibilities();
+        result += possibilities;
+        counter += 1;
+    }
     format!("{result}")
 }
 
@@ -155,7 +210,12 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "not yet"]
+    fn count_possibilities_part2() {
+        let input = "????.######..#####. 1,6,5";
+        assert_eq!(2500, Row::parse_part2(input).count_possibilities());
+    }
+
+    #[test]
     fn test_case_part2() {
         assert_eq!("525152", part2(TEST_DATA));
     }
