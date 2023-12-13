@@ -182,19 +182,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "not yet"]
-    fn test_case_part1_1() {
-        assert_eq!("4", part1(TEST_DATA1));
-    }
-
-    #[test]
     fn test_case_part1_2() {
         assert_eq!("8", part1(TEST_DATA2));
-    }
-
-    #[test]
-    #[ignore = "not yet"]
-    fn test_case_part2() {
-        assert_eq!("1", part1(TEST_DATA1));
     }
 }
