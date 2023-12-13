@@ -4,7 +4,7 @@ use std::collections::HashMap;
 struct Row {
     row: String,
     damaged: Vec<usize>,
-    map: HashMap<(usize, usize), usize>,
+    map: HashMap<(usize, usize, usize), usize>,
 }
 
 impl Row {
@@ -48,110 +48,106 @@ impl Row {
 
     fn count_possibilities(&mut self) -> usize {
         let length = self.row.len();
-        let damaged_number = self.damaged.iter().sum();
-        self.backtrack(String::new(), 0, length, damaged_number, 0)
+        self.backtrack("", 0, length, 0, 0)
     }
 
     fn backtrack(
         &mut self,
-        current_string: String,
+        current_string: &str,
         length: usize,
         real_length: usize,
-        damaged_number: usize,
         number_of_hashes: usize,
+        blocks_placed: usize,
     ) -> usize {
-        if self.map.contains_key(&(length, number_of_hashes)) {
-            return *self.map.get(&(length, number_of_hashes)).unwrap();
+        if self
+            .map
+            .contains_key(&(length, number_of_hashes, blocks_placed))
+        {
+            let value = *self
+                .map
+                .get(&(length, number_of_hashes, blocks_placed))
+                .unwrap();
+            return value;
         }
 
         if length == real_length {
-            if self.is_correct(&current_string) {
+            if self.is_correct(current_string).0 {
                 return 1;
             }
-            return 0;
-        }
-
-        if number_of_hashes > damaged_number {
-            return 0;
-        }
-
-        if damaged_number - number_of_hashes > real_length - length {
             return 0;
         }
 
         let current_char = self.row.chars().nth(length).unwrap();
         match current_char {
             '#' => {
-                let mut new_string = current_string.clone();
+                let mut new_string = current_string.to_string();
                 new_string.push('#');
-                let result = self.backtrack(
-                    new_string,
+                self.backtrack(
+                    &new_string,
                     length + 1,
                     real_length,
-                    damaged_number,
                     number_of_hashes + 1,
-                );
-                self.map.insert((length, number_of_hashes), result);
-                return result;
+                    blocks_placed,
+                )
             }
             '.' => {
-                let mut new_string = current_string.clone();
+                let mut new_string = current_string.to_string();
                 new_string.push('.');
                 let result = self.backtrack(
-                    new_string,
+                    &new_string,
                     length + 1,
                     real_length,
-                    damaged_number,
                     number_of_hashes,
+                    blocks_placed,
                 );
-                self.map.insert((length, number_of_hashes), result);
-                return result;
+                self.map
+                    .insert((length, number_of_hashes, blocks_placed), result);
+                result
             }
 
             '?' => {
-                let mut new_string1 = current_string.clone();
-                let mut new_string2 = current_string.clone();
+                let mut new_string1 = current_string.to_string();
+                let mut new_string2 = current_string.to_string();
                 new_string1.push('#');
                 new_string2.push('.');
-                let possible1 = self.is_possible_solution(&new_string1);
-                let possible2 = self.is_possible_solution(&new_string2);
+                let (possible1, blocks_placed1) = self.is_possible_solution(&new_string1);
+                let (possible2, blocks_placed2) = self.is_possible_solution(&new_string2);
                 if possible1 && possible2 {
                     let result = self.backtrack(
-                        new_string1,
+                        &new_string1,
                         length + 1,
                         real_length,
-                        damaged_number,
                         number_of_hashes + 1,
+                        blocks_placed1,
                     ) + self.backtrack(
-                        new_string2,
+                        &new_string2,
                         length + 1,
                         real_length,
-                        damaged_number,
                         number_of_hashes,
+                        blocks_placed2,
                     );
-                    self.map.insert((length, number_of_hashes), result);
-                    return result;
+                    self.map
+                        .insert((length, number_of_hashes, blocks_placed), result);
+                    result
                 } else if possible1 {
-                    let result = self.backtrack(
-                        new_string1,
+                    self.backtrack(
+                        &new_string1,
                         length + 1,
                         real_length,
-                        damaged_number,
                         number_of_hashes + 1,
-                    );
-
-                    self.map.insert((length, number_of_hashes), result);
-                    return result;
+                        blocks_placed1,
+                    )
                 } else if possible2 {
                     let result = self.backtrack(
-                        new_string2,
+                        &new_string2,
                         length + 1,
                         real_length,
-                        damaged_number,
                         number_of_hashes,
+                        blocks_placed2,
                     );
-                    self.map.insert((length, number_of_hashes), result);
-                    return result;
+                    self.map
+                        .insert((length, number_of_hashes, blocks_placed), result);
+                    result
                 } else {
                     0
                 }
@@ -160,54 +156,55 @@ impl Row {
         }
     }
 
-    fn is_correct(&self, current_string: &str) -> bool {
-        //println!("{current_string} {:?}", self);
+    fn is_correct(&self, current_string: &str) -> (bool, usize) {
+        let mut blocks_placed = 0;
         let mut damaged_number = 0;
-        let mut string_iter = current_string.chars();
         let mut damaged_iter = self.damaged.iter().peekable();
-        while let Some(c) = string_iter.next() {
+        for c in current_string.chars() {
             if c == '.' {
                 if damaged_number > 0 && damaged_iter.peek().is_none() {
-                    //println!("FALSE1");
-                    return false;
+                    return (false, blocks_placed);
                 }
                 if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
-                    //println!("FALSE2");
-                    return false;
+                    return (false, blocks_placed);
                 }
                 damaged_number = 0;
+                blocks_placed += 1;
                 continue;
             }
             damaged_number += 1;
         }
 
         if damaged_number > 0 && damaged_iter.peek().is_none() {
-            //println!("FALSE3");
-            return false;
+            return (false, blocks_placed);
         }
         if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
-            //println!("FALSE4");
-            return false;
+            return (false, blocks_placed);
         }
 
         if damaged_iter.peek().is_some() {
-            return false;
+            return (false, blocks_placed);
         }
 
-        true
+        blocks_placed += 1;
+
+        (true, blocks_placed)
     }
 
-    fn is_possible_solution(&self, current_string: &str) -> bool {
+    fn is_possible_solution(&self, current_string: &str) -> (bool, usize) {
+        let mut blocks_placed = 0;
         let mut damaged_number = 0;
-        let mut string_iter = current_string.chars();
         let mut damaged_iter = self.damaged.iter().peekable();
-        while let Some(c) = string_iter.next() {
+        for c in current_string.chars() {
             if c == '.' {
                 if damaged_number > 0 && damaged_iter.peek().is_none() {
-                    return false;
+                    return (false, blocks_placed);
                 }
-                if damaged_number > 0 && *damaged_iter.next().unwrap() != damaged_number {
-                    return false;
+                if damaged_number > 0 {
+                    if *damaged_iter.next().unwrap() != damaged_number {
+                        return (false, blocks_placed);
+                    }
+                    blocks_placed += 1;
                 }
                 damaged_number = 0;
                 continue;
@@ -216,13 +213,15 @@ impl Row {
         }
 
         if damaged_number > 0 && damaged_iter.peek().is_none() {
-            return false;
+            return (false, blocks_placed);
         }
         if damaged_number > 0 && *damaged_iter.next().unwrap() < damaged_number {
-            return false;
+            return (false, blocks_placed);
         }
 
-        true
+        blocks_placed += 1;
+
+        (true, blocks_placed)
     }
 }
 
@@ -242,12 +241,9 @@ pub fn part2(input: &str) -> String {
         .map(|line| Row::parse_part2(line.trim()))
         .collect();
     let mut result = 0;
-    let mut counter = 1;
     for mut row in rows {
-        println!("{counter}");
         let possibilities = row.count_possibilities();
         result += possibilities;
-        counter += 1;
     }
     format!("{result}")
 }
@@ -297,8 +293,8 @@ mod tests {
         let row = Row::parse(input);
         let test_input1 = "..#...#....###.";
         let test_input2 = ".#...#.....###.";
-        assert!(row.is_correct(test_input1));
-        assert!(row.is_correct(test_input2));
+        assert!(row.is_correct(test_input1).0);
+        assert!(row.is_correct(test_input2).0);
     }
 
     #[test]
