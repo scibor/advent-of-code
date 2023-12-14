@@ -1,7 +1,17 @@
-#[derive(Debug, PartialEq, Clone)]
+use std::collections::HashMap;
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Grid {
     rows: Vec<Vec<char>>,
     columns: Vec<Vec<char>>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+enum Direction {
+    N,
+    W,
+    S,
+    E,
 }
 
 impl Grid {
@@ -19,25 +29,49 @@ impl Grid {
         Grid { rows, columns }
     }
 
-    fn move_rocks_up(&self) -> Grid {
-        let mut new_columns: Vec<Vec<char>> = Vec::new();
-        for column in &self.columns {
-            new_columns.push(Self::create_new_column(column));
-        }
+    fn move_rocks(&self, direction: &Direction) -> Grid {
+        if *direction == Direction::N || *direction == Direction::S {
+            let mut new_columns: Vec<Vec<char>> = Vec::new();
+            for column in &self.columns {
+                new_columns.push(Self::create_new_vector(column, direction));
+            }
 
-        let rows = Self::create_rows_from_columns(&new_columns);
-        Grid {
-            rows,
-            columns: new_columns,
+            let rows = Self::create_rows_from_columns(&new_columns);
+            Grid {
+                rows,
+                columns: new_columns,
+            }
+        } else {
+            let mut new_rows: Vec<Vec<char>> = Vec::new();
+            for row in &self.rows {
+                new_rows.push(Self::create_new_vector(row, direction));
+            }
+
+            let columns = Self::create_rows_from_columns(&new_rows);
+            Grid {
+                rows: new_rows,
+                columns,
+            }
         }
     }
 
-    fn create_new_column(column: &[char]) -> Vec<char> {
+    fn perform_one_cycle(&self) -> Grid {
+        let mut grid = self.move_rocks(&Direction::N);
+        grid = grid.move_rocks(&Direction::W);
+        grid = grid.move_rocks(&Direction::S);
+        grid.move_rocks(&Direction::E)
+    }
+
+    fn create_new_vector(column: &[char], direction: &Direction) -> Vec<char> {
+        let mut input_vector = column.to_owned();
+        if *direction == Direction::S || *direction == Direction::E {
+            input_vector.reverse();
+        }
         let mut last_block: Option<usize> = None;
         let mut last_rock_position: Option<usize> = None;
         let mut rocks_positions = Vec::new();
         let mut square_rock_positions = Vec::new();
-        for (i, c) in column.iter().enumerate() {
+        for (i, c) in input_vector.iter().enumerate() {
             match c {
                 '#' => {
                     last_block = Some(i);
@@ -85,6 +119,9 @@ impl Grid {
                 result.push('.');
             }
         }
+        if *direction == Direction::S || *direction == Direction::E {
+            result.reverse();
+        }
         result
     }
 
@@ -113,13 +150,33 @@ impl Grid {
 
 pub fn part1(input: &str) -> String {
     let grid = Grid::parse(input);
-    let new_grid = grid.move_rocks_up();
+    let new_grid = grid.move_rocks(&Direction::N);
     let result = new_grid.calculate_total_load();
     format!("{result}")
 }
 
-pub fn part2(_input: &str) -> String {
-    let result = 0;
+pub fn part2(input: &str) -> String {
+    let mut grid = Grid::parse(input);
+    let mut states = HashMap::new();
+    let mut cycles = 0;
+
+    while !states.contains_key(&grid) {
+        states.insert(grid.clone(), cycles);
+        grid = grid.perform_one_cycle();
+        cycles += 1;
+    }
+
+    let start_of_cycle = states.get(&grid).unwrap();
+    let cycle_length = cycles - start_of_cycle;
+
+    let how_many_cycles = start_of_cycle + ((1_000_000_000 - start_of_cycle) % cycle_length);
+    let mut grid = Grid::parse(input);
+
+    for _i in 0..how_many_cycles {
+        grid = grid.perform_one_cycle();
+    }
+
+    let result = grid.calculate_total_load();
     format!("{result}")
 }
 
@@ -156,10 +213,10 @@ mod tests {
     }
 
     #[test]
-    fn create_new_column_test() {
+    fn create_new_column_test_n() {
         let column = ['.', 'O', 'O', '#', 'O', '.', '.', 'O', '#', 'O'];
         let expected = vec!['O', 'O', '.', '#', 'O', 'O', '.', '.', '#', 'O'];
-        assert_eq!(expected, Grid::create_new_column(&column));
+        assert_eq!(expected, Grid::create_new_vector(&column, &Direction::N));
     }
 
     #[test]
@@ -176,7 +233,7 @@ mod tests {
             #....#....";
         let grid = Grid::parse(TEST_DATA);
         let expected_grid = Grid::parse(expected);
-        assert_eq!(expected_grid, grid.move_rocks_up());
+        assert_eq!(expected_grid, grid.move_rocks(&Direction::N));
     }
 
     #[test]
@@ -185,8 +242,31 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "not yet"]
+    fn create_new_column_test_s() {
+        let column = ['.', 'O', 'O', '#', 'O', '.', '.', 'O', '#', 'O'];
+        let expected = vec!['.', 'O', 'O', '#', '.', '.', 'O', 'O', '#', 'O'];
+        assert_eq!(expected, Grid::create_new_vector(&column, &Direction::S));
+    }
+
+    #[test]
+    fn perform_one_cycle_test() {
+        let grid = Grid::parse(TEST_DATA);
+        let expected = ".....#....
+        ....#...O#
+        ...OO##...
+        .OO#......
+        .....OOO#.
+        .O#...O#.#
+        ....O#....
+        ......OOOO
+        #...O###..
+        #..OO#....";
+        let expected_grid = Grid::parse(expected);
+        assert_eq!(expected_grid, grid.perform_one_cycle());
+    }
+
+    #[test]
     fn test_case_part2() {
-        assert_eq!("1", part1(TEST_DATA));
+        assert_eq!("64", part2(TEST_DATA));
     }
 }
