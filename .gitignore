@@ -19,3 +19,5 @@ Cargo.lock
 
 /inputs
 *.swp
+*.data
+*.svg
