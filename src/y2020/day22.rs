@@ -99,7 +99,7 @@ fn parse_game_data(input: &str) -> Game {
     Game::new(player1, player2)
 }
 
-pub fn part1(input: &str) -> usize {
+#[must_use] pub fn part1(input: &str) -> usize {
     let mut game = parse_game_data(input);
     game.find_final_score()
 }
@@ -230,7 +230,7 @@ fn parse_recursive_game_data(input: &str) -> RecursiveGame {
     RecursiveGame::new(player1, player2)
 }
 
-pub fn part2(input: &str) -> usize {
+#[must_use] pub fn part2(input: &str) -> usize {
     let mut game = parse_recursive_game_data(input);
     game.find_final_score()
 }

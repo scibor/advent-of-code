@@ -94,7 +94,7 @@ fn trip_severity(mut layers: Vec<Layer>) -> usize {
     result
 }
 
-pub fn part1(input: &str) -> usize {
+#[must_use] pub fn part1(input: &str) -> usize {
     let layers: Vec<Layer> = add_empty_layers(&parse_layers(input));
     trip_severity(layers)
 }
@@ -157,7 +157,7 @@ fn trip_severity_with_delay(mut layers: Vec<Layer>, delay: usize) -> usize {
     result
 }
 
-pub fn part2(input: &str) -> usize {
+#[must_use] pub fn part2(input: &str) -> usize {
     let layers: Vec<Layer> = add_empty_layers(&parse_layers(input));
     delay_start(layers.clone())
 }

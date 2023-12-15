@@ -85,7 +85,7 @@ pub fn part1(input: &str) -> isize {
     eval_equation("root", &equations, &mut cache)
 }
 
-pub fn part2(_input: &str) -> isize {
+#[must_use] pub fn part2(_input: &str) -> isize {
     0
 }
 

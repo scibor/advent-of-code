@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![allow(clippy::must_use_candidate)]
 #![allow(clippy::missing_panics_doc)]
 #![warn(clippy::all, clippy::pedantic)]
 

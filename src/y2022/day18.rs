@@ -50,12 +50,12 @@ fn find_outer_sides(cubes: Vec<Cube>) -> usize {
     histogram.into_iter().filter(|(_, v)| *v == 1).count()
 }
 
-pub fn part1(input: &str) -> usize {
+#[must_use] pub fn part1(input: &str) -> usize {
     let cubes: Vec<Cube> = input.lines().map(|l| Cube::new(Point3D::from(l))).collect();
     find_outer_sides(cubes)
 }
 
-pub fn part2(_input: &str) -> usize {
+#[must_use] pub fn part2(_input: &str) -> usize {
     0
 }
 

@@ -88,7 +88,7 @@ pub fn part1(input: &str) -> String {
     format!("{result}")
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let result: usize = input
         .lines()
         .map(|row| parse_row(row.trim()).find_minimal().power())

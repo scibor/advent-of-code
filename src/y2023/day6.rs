@@ -71,7 +71,7 @@ fn parse_data_part2(input: &str) -> TimeDistance {
     TimeDistance { time, distance }
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let data = parse_data_part2(input);
     let result = data.count_ways_to_win();
     format!("{result}")

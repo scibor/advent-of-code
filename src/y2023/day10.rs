@@ -124,7 +124,7 @@ fn make_step(
     }
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let board = parse_data(input);
     let (start_x, start_y) = find_start(&board);
     let ((mut x, mut y), mut direction) = make_first_step(&board);
@@ -147,7 +147,7 @@ pub fn part1(input: &str) -> String {
 // to post this code in here. The trick to do it this this way is to not draw bmp file pixel by pixel but
 // with 3x3 grids to allow spaces between pipes. I would gladly solve it the normal way after
 // learning how to do this. Visualization for my input is in visualizations folder in repository.
-pub fn part2(_input: &str) -> String {
+#[must_use] pub fn part2(_input: &str) -> String {
     let result = 0;
     format!("{result}")
 }

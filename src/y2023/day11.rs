@@ -91,13 +91,13 @@ impl Galaxy {
     }
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let galaxy = Galaxy::parse(input);
     let result = galaxy.find_distances(1);
     format!("{result}")
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let galaxy = Galaxy::parse(input);
     let result = galaxy.find_distances(999_999);
     format!("{result}")

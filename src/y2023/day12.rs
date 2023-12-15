@@ -225,7 +225,7 @@ impl Row {
     }
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let rows: Vec<Row> = input.lines().map(|line| Row::parse(line.trim())).collect();
     let mut result = 0;
     for mut row in rows {
@@ -235,7 +235,7 @@ pub fn part1(input: &str) -> String {
     format!("{result}")
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let rows: Vec<Row> = input
         .lines()
         .map(|line| Row::parse_part2(line.trim()))

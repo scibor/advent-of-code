@@ -14,7 +14,7 @@ fn get_calibration_value(s: &str) -> usize {
         .unwrap()
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let result: usize = input.lines().map(|l| get_calibration_value(l.trim())).sum();
     format!("{result}")
 }
@@ -47,7 +47,7 @@ fn starts_with_digit<'a>(
     digit_map.iter().find(|(k, _)| s.starts_with(k))
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let digit_map = [
         ("one", '1'),
         ("two", '2'),

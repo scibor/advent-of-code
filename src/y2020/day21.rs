@@ -63,7 +63,7 @@ fn reduce_allergen_map(
     allergen_map.clone()
 }
 
-pub fn create_answer_for_part_2(reduced_map: &HashMap<String, HashSet<String>>) -> String {
+#[must_use] pub fn create_answer_for_part_2(reduced_map: &HashMap<String, HashSet<String>>) -> String {
     let mut pairs: Vec<(String, String)> = reduced_map
         .iter()
         .map(|(k, v)| (k.clone(), v.iter().next().unwrap().clone()))

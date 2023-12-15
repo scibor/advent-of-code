@@ -8,7 +8,7 @@ fn hash(input: &str) -> usize {
     result
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let fragments: Vec<&str> = input.trim().split(',').collect();
     let result: usize = fragments.iter().map(|x| hash(x.trim())).sum();
     format!("{result}")
@@ -61,7 +61,7 @@ fn focusing_power(boxes: HashMap<usize, Vec<Lens>>) -> usize {
     result
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let split = input.trim().split(',');
     let mut lenses: Vec<Lens> = Vec::new();
     for s in split {

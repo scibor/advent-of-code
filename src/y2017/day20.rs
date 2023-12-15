@@ -127,7 +127,7 @@ fn find_particle_with_minimal_rate(particles: &[Particle]) -> usize {
         .unwrap()
 }
 
-pub fn part1(input: &str) -> usize {
+#[must_use] pub fn part1(input: &str) -> usize {
     let particles: Vec<Particle> = parse_data(input);
     let mut minimal_acceleration_particles = find_particles_with_minimal_acc(particles);
 
@@ -146,7 +146,7 @@ pub fn part1(input: &str) -> usize {
     find_particle_with_minimal_rate(&minimal_acceleration_particles)
 }
 
-pub fn part2(input: &str) -> usize {
+#[must_use] pub fn part2(input: &str) -> usize {
     let mut particles: Vec<Particle> = parse_data(input);
 
     loop {

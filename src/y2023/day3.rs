@@ -143,7 +143,7 @@ fn parse_board(input: &str) -> Board {
     }
 }
 
-pub fn part1(input: &str) -> String {
+#[must_use] pub fn part1(input: &str) -> String {
     let b = parse_board(input);
     let mut numbers_to_sum = Vec::new();
     for number in &b.numbers {
@@ -158,7 +158,7 @@ pub fn part1(input: &str) -> String {
     format!("{result}")
 }
 
-pub fn part2(input: &str) -> String {
+#[must_use] pub fn part2(input: &str) -> String {
     let b = parse_board(input);
     let mut result = 0;
     for (p, s) in &b.symbols {
