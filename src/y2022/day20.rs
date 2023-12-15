@@ -37,7 +37,9 @@ fn grove_coordinates(arr: &[isize], length: usize) -> isize {
     x + y + z
 }
 
-#[must_use] pub fn part1(input: &str) -> isize {
+/// # Panics
+#[must_use]
+pub fn part1(input: &str) -> isize {
     let mut arr: Vec<isize> = input.lines().map(|l| l.trim().parse().unwrap()).collect();
     let length = arr.len();
     let mut indices: Vec<usize> = (0..length).rev().collect();
@@ -45,7 +47,8 @@ fn grove_coordinates(arr: &[isize], length: usize) -> isize {
     grove_coordinates(&arr, length)
 }
 
-#[must_use] pub fn part2(_input: &str) -> isize {
+#[must_use]
+pub fn part2(_input: &str) -> isize {
     0
 }
 

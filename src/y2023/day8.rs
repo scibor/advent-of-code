@@ -53,7 +53,9 @@ fn parse_data(input: &str) -> Network {
     Network { sides, elements }
 }
 
-#[must_use] pub fn part1(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part1(input: &str) -> String {
     let network = parse_data(input);
     let mut result = 0;
     let mut side_iterator = 0;
@@ -80,7 +82,9 @@ fn vector_lcm(arguments: Vec<usize>) -> usize {
         .fold(1, |acc, x| num::integer::lcm(x, acc))
 }
 
-#[must_use] pub fn part2(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part2(input: &str) -> String {
     let network = parse_data(input);
     let ending_with_a: Vec<String> = network
         .elements

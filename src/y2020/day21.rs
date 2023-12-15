@@ -63,7 +63,10 @@ fn reduce_allergen_map(
     allergen_map.clone()
 }
 
-#[must_use] pub fn create_answer_for_part_2(reduced_map: &HashMap<String, HashSet<String>>) -> String {
+/// # Panics
+#[must_use]
+#[allow(clippy::implicit_hasher)]
+pub fn create_answer_for_part_2(reduced_map: &HashMap<String, HashSet<String>>) -> String {
     let mut pairs: Vec<(String, String)> = reduced_map
         .iter()
         .map(|(k, v)| (k.clone(), v.iter().next().unwrap().clone()))
@@ -73,6 +76,7 @@ fn reduce_allergen_map(
     string_vec.join(",")
 }
 
+/// # Panics
 pub fn part1_and_2(input: &str) -> (usize, String) {
     let foods: Vec<Food> = input.lines().map(parse_row).collect();
     let allergens = get_allergens(&foods);

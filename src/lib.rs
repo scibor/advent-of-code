@@ -1,5 +1,4 @@
-#![allow(dead_code)]
-#![allow(clippy::missing_panics_doc)]
+#![allow(dead_code, clippy::missing_panics_doc, clippy::implicit_hasher)]
 #![warn(clippy::all, clippy::pedantic)]
 
 pub mod y2017;

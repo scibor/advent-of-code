@@ -28,8 +28,9 @@ fn process_number_list(numbers: &[isize], forward: bool) -> isize {
 
     new_value
 }
-
-#[must_use] pub fn part1(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part1(input: &str) -> String {
     let number_lines: Vec<Vec<isize>> = input
         .lines()
         .map(|line| {
@@ -45,7 +46,9 @@ fn process_number_list(numbers: &[isize], forward: bool) -> isize {
     format!("{result}")
 }
 
-#[must_use] pub fn part2(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part2(input: &str) -> String {
     let number_lines: Vec<Vec<isize>> = input
         .lines()
         .map(|line| {

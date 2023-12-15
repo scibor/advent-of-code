@@ -148,14 +148,17 @@ impl Grid {
     }
 }
 
-#[must_use] pub fn part1(input: &str) -> String {
+#[must_use]
+pub fn part1(input: &str) -> String {
     let grid = Grid::parse(input);
     let new_grid = grid.move_rocks(&Direction::N);
     let result = new_grid.calculate_total_load();
     format!("{result}")
 }
 
-#[must_use] pub fn part2(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part2(input: &str) -> String {
     let mut grid = Grid::parse(input);
     let mut states = HashMap::new();
     let mut cycles = 0;

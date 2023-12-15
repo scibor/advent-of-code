@@ -33,7 +33,9 @@ fn get_next_value(v: isize, next_part: &str) -> isize {
     v
 }
 
-#[must_use] pub fn part1(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part1(input: &str) -> String {
     let seeds = parse_seeds(input);
     let parts: Vec<&str> = input.split("\n\n").skip(1).collect();
     let mut seed_final_values: Vec<isize> = Vec::new();
@@ -221,7 +223,9 @@ fn get_intervals_minimum(intervals: &[Interval]) -> isize {
         .unwrap()
 }
 
-#[must_use] pub fn part2(input: &str) -> String {
+/// # Panics
+#[must_use]
+pub fn part2(input: &str) -> String {
     let seeds = parse_seeds_part2(input);
     let parts: Vec<&str> = input.split("\n\n").skip(1).collect();
     let mut minimums: Vec<isize> = Vec::new();
