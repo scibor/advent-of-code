@@ -5,10 +5,18 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "aoclibrary"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aocbin"
+path = "src/main.rs"
+
 [profile.release]
 lto = true
 panic = 'abort'
-debug=true
+debug = true
 
 [dependencies]
 lazy_static = "1.4.0"
