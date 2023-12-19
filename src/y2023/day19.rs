@@ -53,147 +53,147 @@ impl Rule {
 
     fn applies(&self, part: &Part) -> Option<String> {
         if self.dimension.is_none() {
-            return Some(self.goto.to_owned());
+            return Some(self.goto.clone());
         }
         match (&self.dimension.unwrap(), &self.relation.unwrap()) {
             ('x', Relation::Greater) => {
                 if part.x > self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('x', Relation::Less) => {
                 if part.x < self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('m', Relation::Greater) => {
                 if part.m > self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('m', Relation::Less) => {
                 if part.m < self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('a', Relation::Greater) => {
                 if part.a > self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('a', Relation::Less) => {
                 if part.a < self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('s', Relation::Greater) => {
                 if part.s > self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             ('s', Relation::Less) => {
                 if part.s < self.value.unwrap() {
-                    return Some(self.goto.to_owned());
+                    return Some(self.goto.clone());
                 }
-                return None;
+                None
             }
             _ => unreachable!(),
         }
     }
 
     fn split_range(&self, ranges: &Ranges) -> (String, Option<Ranges>, Option<Ranges>) {
-        let goto = self.goto.to_owned();
+        let goto = self.goto.clone();
         if self.dimension.is_none() {
-            return (goto, Some(ranges.clone()), None);
+            return (goto, Some(*ranges), None);
         }
         let value = self.value.unwrap();
         match (&self.dimension.unwrap(), &self.relation.unwrap()) {
             ('x', Relation::Greater) => {
                 if value > ranges.x_max {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 if value < ranges.x_min {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 let (r1, r2) = ranges.split('x', value);
-                return (goto, r2, Some(r1));
+                (goto, r2, Some(r1))
             }
             ('x', Relation::Less) => {
                 if value > ranges.x_max {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 if value < ranges.x_min {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 let (r1, r2) = ranges.split('x', value - 1);
-                return (goto, Some(r1), r2);
+                (goto, Some(r1), r2)
             }
             ('m', Relation::Greater) => {
                 if value > ranges.m_max {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 if value < ranges.m_min {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 let (r1, r2) = ranges.split('m', value);
-                return (goto, r2, Some(r1));
+                (goto, r2, Some(r1))
             }
             ('m', Relation::Less) => {
                 if value > ranges.m_max {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 if value < ranges.m_min {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 let (r1, r2) = ranges.split('m', value - 1);
-                return (goto, Some(r1), r2);
+                (goto, Some(r1), r2)
             }
             ('a', Relation::Greater) => {
                 if value > ranges.a_max {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 if value < ranges.a_min {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 let (r1, r2) = ranges.split('a', value);
-                return (goto, r2, Some(r1));
+                (goto, r2, Some(r1))
             }
             ('a', Relation::Less) => {
                 if value > ranges.a_max {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 if value < ranges.a_min {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 let (r1, r2) = ranges.split('a', value - 1);
-                return (goto, Some(r1), r2);
+                (goto, Some(r1), r2)
             }
             ('s', Relation::Greater) => {
                 if value > ranges.s_max {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 if value < ranges.s_min {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 let (r1, r2) = ranges.split('s', value);
-                return (goto, r2, Some(r1));
+                (goto, r2, Some(r1))
             }
             ('s', Relation::Less) => {
                 if value > ranges.s_max {
-                    return (goto, Some(ranges.clone()), None);
+                    return (goto, Some(*ranges), None);
                 }
                 if value < ranges.s_min {
-                    return (goto, None, Some(ranges.clone()));
+                    return (goto, None, Some(*ranges));
                 }
                 let (r1, r2) = ranges.split('s', value - 1);
-                return (goto, Some(r1), r2);
+                (goto, Some(r1), r2)
             }
             _ => unreachable!(),
         }
@@ -213,10 +213,9 @@ impl Workflow {
         let rules = split
             .next()
             .unwrap()
-            .replace("}", "")
+            .replace('}', "")
             .split(',')
-            .into_iter()
-            .map(|rule| Rule::parse(rule))
+            .map(Rule::parse)
             .collect();
         Workflow { name, rules }
     }
@@ -280,20 +279,8 @@ impl Part {
 
 fn parse_data(input: &str) -> (Vec<Workflow>, Vec<Part>) {
     let mut split = input.split("\n\n");
-    let workflows = split
-        .next()
-        .unwrap()
-        .lines()
-        .into_iter()
-        .map(|line| Workflow::parse(line))
-        .collect();
-    let parts = split
-        .next()
-        .unwrap()
-        .lines()
-        .into_iter()
-        .map(|line| Part::parse(line))
-        .collect();
+    let workflows = split.next().unwrap().lines().map(Workflow::parse).collect();
+    let parts = split.next().unwrap().lines().map(Part::parse).collect();
     (workflows, parts)
 }
 
@@ -307,12 +294,12 @@ fn workflows_to_map(workflows: Vec<Workflow>) -> HashMap<String, Vec<Rule>> {
     result
 }
 
-fn eval(part: Part, workflow_map: &HashMap<String, Vec<Rule>>) -> usize {
+fn eval(part: &Part, workflow_map: &HashMap<String, Vec<Rule>>) -> usize {
     let mut current_state = String::from("in");
 
     'outer: while &current_state != "A" && &current_state != "R" {
         for rule in workflow_map.get(&current_state).unwrap() {
-            if let Some(goto) = rule.applies(&part) {
+            if let Some(goto) = rule.applies(part) {
                 current_state = goto;
                 continue 'outer;
             }
@@ -326,13 +313,15 @@ fn eval(part: Part, workflow_map: &HashMap<String, Vec<Rule>>) -> usize {
     }
 }
 
+/// # Panics
+#[must_use]
 pub fn part1(input: &str) -> String {
     let (workflows, parts) = parse_data(input);
     let workflow_map = workflows_to_map(workflows);
     let mut result = 0;
 
     for part in parts {
-        result += eval(part, &workflow_map)
+        result += eval(&part, &workflow_map);
     }
 
     format!("{result}")
@@ -351,6 +340,7 @@ struct Ranges {
 }
 
 impl Ranges {
+    #[allow(clippy::too_many_arguments)]
     fn new(
         x_min: usize,
         x_max: usize,
@@ -384,9 +374,9 @@ impl Ranges {
         match dimension {
             'x' => {
                 if value < self.x_min || value > self.x_max {
-                    return (self.clone(), None);
+                    return (*self, None);
                 }
-                return (
+                (
                     Ranges::new(
                         self.x_min, value, self.m_min, self.m_max, self.a_min, self.a_max,
                         self.s_min, self.s_max,
@@ -401,13 +391,13 @@ impl Ranges {
                         self.s_min,
                         self.s_max,
                     )),
-                );
+                )
             }
             'm' => {
                 if value < self.m_min || value > self.m_max {
-                    return (self.clone(), None);
+                    return (*self, None);
                 }
-                return (
+                (
                     Ranges::new(
                         self.x_min, self.x_max, self.m_min, value, self.a_min, self.a_max,
                         self.s_min, self.s_max,
@@ -422,13 +412,13 @@ impl Ranges {
                         self.s_min,
                         self.s_max,
                     )),
-                );
+                )
             }
             'a' => {
                 if value < self.a_min || value > self.a_max {
-                    return (self.clone(), None);
+                    return (*self, None);
                 }
-                return (
+                (
                     Ranges::new(
                         self.x_min, self.x_max, self.m_min, self.m_max, self.a_min, value,
                         self.s_min, self.s_max,
@@ -443,13 +433,13 @@ impl Ranges {
                         self.s_min,
                         self.s_max,
                     )),
-                );
+                )
             }
             's' => {
                 if value < self.s_min || value > self.s_max {
-                    return (self.clone(), None);
+                    return (*self, None);
                 }
-                return (
+                (
                     Ranges::new(
                         self.x_min, self.x_max, self.m_min, self.m_max, self.a_min, self.a_max,
                         self.s_min, value,
@@ -464,7 +454,7 @@ impl Ranges {
                         value + 1,
                         self.s_max,
                     )),
-                );
+                )
             }
             _ => unreachable!(),
         }
@@ -472,36 +462,37 @@ impl Ranges {
 }
 
 fn eval_part2(
-    current_state: String,
+    current_state: &str,
     workflow_map: &HashMap<String, Vec<Rule>>,
     ranges: Ranges,
 ) -> usize {
-    if &current_state == "A" {
+    if current_state == "A" {
         return ranges.number_of_elements();
-    } else if &current_state == "R" {
+    } else if current_state == "R" {
         return 0;
     }
 
     let mut result = 0;
-    let rules = workflow_map.get(&current_state).unwrap();
+    let rules = workflow_map.get(current_state).unwrap();
     let mut current_range = Some(ranges);
     for rule in rules {
         let (goto, r1, r2) = rule.split_range(&current_range.unwrap());
         if let Some(r) = r1 {
-            result += eval_part2(goto, &workflow_map, r)
+            result += eval_part2(&goto, workflow_map, r);
         }
         current_range = r2;
     }
 
     result
 }
-
+/// # Panics
+#[must_use]
 pub fn part2(input: &str) -> String {
     let (workflows, _) = parse_data(input);
     let workflow_map = workflows_to_map(workflows);
 
     let result = eval_part2(
-        String::from("in"),
+        "in",
         &workflow_map,
         Ranges {
             x_min: 1,
